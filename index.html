@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sam Hyun — Graphic Designer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0c0c0e;
+    --off-black: #111113;
+    --warm-gray: #8a8a82;
+    --mid-gray: #5a5a55;
+    --off-white: #e8e5df;
+    --cream: #f0ece4;
+    --accent: #c8a96e;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Instrument Sans', sans-serif;
+    --ease: cubic-bezier(0.76, 0, 0.24, 1);
+  }
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--black); color: var(--off-white); font-family: var(--sans); font-weight: 300; overflow-x: hidden; cursor: none; }
+  a { text-decoration: none; color: inherit; }
+  ul, li { list-style: none; }
+
+  /* CURSOR */
+  #cursor { position: fixed; width: 10px; height: 10px; background: var(--accent); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: width .3s var(--ease), height .3s var(--ease), background .3s; }
+  #cursor-ring { position: fixed; width: 36px; height: 36px; border: 1px solid rgba(200,169,110,.4); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: width .4s var(--ease), height .4s var(--ease), border-color .3s; }
+  #cursor.hovered { width: 16px; height: 16px; background: var(--cream); }
+  #cursor-ring.hovered { width: 60px; height: 60px; border-color: rgba(200,169,110,.7); }
+
+  /* PRELOADER */
+  #preloader { position: fixed; inset: 0; background: var(--black); z-index: 1000; display: flex; align-items: center; justify-content: center; transition: opacity .8s var(--ease), visibility .8s; }
+  #preloader.hidden { opacity: 0; visibility: hidden; }
+  #preloader-word { font-family: var(--serif); font-size: clamp(3rem,8vw,6rem); font-weight: 300; color: var(--off-white); letter-spacing: .05em; opacity: 0; transform: translateY(20px); transition: opacity .4s, transform .4s var(--ease); }
+  #preloader-word.visible { opacity: 1; transform: translateY(0); }
+
+  /* NAV */
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 2rem 5vw; display: flex; align-items: center; justify-content: space-between; }
+  nav::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom,rgba(12,12,14,.85) 0%,transparent 100%); pointer-events: none; }
+  .nav-logo { font-family: var(--serif); font-size: 1.4rem; font-weight: 300; letter-spacing: .08em; color: var(--cream); position: relative; z-index: 1; }
+  .nav-links { display: flex; gap: 3rem; position: relative; z-index: 1; }
+  .nav-links a { font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: var(--warm-gray); transition: color .3s; position: relative; }
+  .nav-links a::after { content: ''; position: absolute; bottom: -3px; left: 0; right: 0; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform .4s var(--ease); }
+  .nav-links a:hover { color: var(--off-white); }
+  .nav-links a:hover::after { transform: scaleX(1); }
+
+  /* HERO */
+  #hero { position: relative; height: 100svh; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+  .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 60% 40%,rgba(200,169,110,.06) 0%,transparent 60%), radial-gradient(ellipse at 20% 70%,rgba(100,80,140,.04) 0%,transparent 50%), var(--off-black); }
+  .hero-bg-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(200,169,110,.03) 1px,transparent 1px), linear-gradient(90deg,rgba(200,169,110,.03) 1px,transparent 1px); background-size: 80px 80px; }
+  .hero-label { position: absolute; top: 42%; right: 8vw; z-index: 2; text-align: right; opacity: 0; transform: translateY(16px); animation: fadeUp 1s var(--ease) 1.2s forwards; }
+  .hero-label p { font-size: .82rem; letter-spacing: .14em; text-transform: uppercase; color: var(--warm-gray); line-height: 2; }
+  .hero-label p:first-child { color: var(--accent); font-size: .72rem; }
+  .hero-ticker-wrap { position: relative; z-index: 2; padding-bottom: 5vh; overflow: hidden; }
+  .hero-ticker-inner { display: flex; animation: ticker 22s linear infinite; white-space: nowrap; }
+  .hero-ticker-text { font-family: var(--serif); font-size: clamp(7rem,14vw,12rem); font-weight: 300; color: var(--off-white); letter-spacing: -.02em; padding-right: 3vw; white-space: nowrap; line-height: 1; flex-shrink: 0; }
+  .hero-ticker-text em { font-style: italic; color: var(--accent); }
+  @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .hero-scroll-hint { position: absolute; bottom: 2.5rem; left: 5vw; z-index: 2; display: flex; align-items: center; gap: 1rem; opacity: 0; animation: fadeUp 1s var(--ease) 1.6s forwards; }
+  .hero-scroll-hint span { font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; color: var(--mid-gray); }
+  .scroll-line { width: 50px; height: 1px; background: var(--mid-gray); position: relative; overflow: hidden; }
+  .scroll-line::after { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: var(--accent); animation: scrollLine 2s var(--ease) infinite 2s; }
+  @keyframes scrollLine { from { left: -100%; } to { left: 100%; } }
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+  /* SECTION SHARED */
+  .section-label { font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; color: var(--accent); margin-bottom: 3rem; display: flex; align-items: center; gap: 1rem; }
+  .section-label::before { content: ''; display: block; width: 30px; height: 1px; background: var(--accent); }
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity .9s var(--ease), transform .9s var(--ease); }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: .1s; }
+  .reveal-delay-2 { transition-delay: .2s; }
+  .reveal-delay-3 { transition-delay: .3s; }
+  .reveal-delay-4 { transition-delay: .4s; }
+
+  /* WORKS */
+  #works { padding: 12vh 5vw; max-width: 1400px; margin: 0 auto; }
+  .works-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 5rem; border-top: 1px solid rgba(255,255,255,.07); padding-top: 3rem; }
+  .works-title { font-family: var(--serif); font-size: clamp(3rem,7vw,6rem); font-weight: 300; letter-spacing: -.03em; line-height: 1; color: var(--cream); }
+  .works-count { font-size: .8rem; color: var(--mid-gray); letter-spacing: .1em; }
+  .project-list { display: flex; flex-direction: column; }
+  .project-item { display: grid; grid-template-columns: 60px 1fr auto auto; align-items: center; gap: 2rem; padding: 2.2rem 0; border-bottom: 1px solid rgba(255,255,255,.06); cursor: pointer; position: relative; overflow: hidden; transition: padding-left .4s var(--ease); }
+  .project-item::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg,transparent,rgba(200,169,110,.03)); transform: translateX(-100%); transition: transform .5s var(--ease); }
+  .project-item:hover::before { transform: translateX(0); }
+  .project-item:hover { padding-left: 1rem; }
+  .project-num { font-family: var(--serif); font-size: .85rem; color: var(--mid-gray); font-style: italic; }
+  .project-info { display: flex; flex-direction: column; gap: .3rem; }
+  .project-title { font-family: var(--serif); font-size: clamp(1.4rem,2.5vw,2rem); font-weight: 300; color: var(--cream); letter-spacing: -.01em; transition: color .3s; }
+  .project-item:hover .project-title { color: var(--accent); }
+  .project-tags-row { display: flex; gap: .6rem; flex-wrap: wrap; }
+  .project-tag-sm { font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; color: var(--mid-gray); border: 1px solid rgba(90,90,85,.4); padding: .2rem .6rem; }
+  .project-date { font-size: .75rem; letter-spacing: .1em; color: var(--mid-gray); text-align: right; white-space: nowrap; }
+  .project-arrow { width: 36px; height: 36px; border: 1px solid var(--mid-gray); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .8rem; color: var(--mid-gray); flex-shrink: 0; transition: background .3s, border-color .3s, color .3s, transform .4s var(--ease); }
+  .project-item:hover .project-arrow { background: var(--accent); border-color: var(--accent); color: var(--black); transform: rotate(45deg); }
+
+  /* HOVER PREVIEW */
+  #project-preview { position: fixed; width: 300px; height: 380px; pointer-events: none; z-index: 50; opacity: 0; transform: scale(.92) rotate(-2deg); transition: opacity .4s var(--ease), transform .4s var(--ease); overflow: hidden; }
+  #project-preview.visible { opacity: 1; transform: scale(1) rotate(0deg); }
+  .preview-bg { width: 100%; height: 100%; position: absolute; inset: 0; }
+  .preview-img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; transition: opacity .5s var(--ease); }
+  .preview-overlay { position: absolute; inset: 0; background: linear-gradient(to top,rgba(12,12,14,.8) 0%,transparent 50%); }
+  .preview-label { position: absolute; bottom: 1.5rem; left: 1.5rem; font-family: var(--serif); font-size: 1.2rem; font-weight: 300; color: var(--cream); }
+
+  /* PROJECT MODAL */
+  #modal-overlay { position: fixed; inset: 0; background: rgba(12,12,14,.95); z-index: 200; display: flex; overflow-y: auto; opacity: 0; visibility: hidden; transition: opacity .5s var(--ease), visibility .5s; }
+  #modal-overlay.open { opacity: 1; visibility: visible; }
+  #modal { max-width: 1100px; margin: 0 auto; padding: 8rem 5vw 6rem; width: 100%; }
+  .modal-close { position: fixed; top: 2rem; right: 2rem; width: 48px; height: 48px; border: 1px solid var(--mid-gray); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--warm-gray); cursor: pointer; transition: background .3s, border-color .3s, color .3s; z-index: 201; }
+  .modal-close:hover { background: var(--accent); border-color: var(--accent); color: var(--black); }
+  .modal-header { margin-bottom: 4rem; }
+  .modal-tag { font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; }
+  .modal-tag::before { content: ''; display: block; width: 30px; height: 1px; background: var(--accent); }
+  .modal-title { font-family: var(--serif); font-size: clamp(2.5rem,6vw,5rem); font-weight: 300; color: var(--cream); letter-spacing: -.02em; line-height: 1; margin-bottom: 2rem; }
+  .modal-meta { display: flex; gap: 3rem; flex-wrap: wrap; padding-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,.07); margin-bottom: 2.5rem; }
+  .modal-meta-item { display: flex; flex-direction: column; gap: .4rem; }
+  .modal-meta-label { font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--mid-gray); }
+  .modal-meta-value { font-size: .9rem; color: var(--warm-gray); line-height: 1.6; }
+  .modal-meta-value a { color: var(--accent); border-bottom: 1px solid rgba(200,169,110,.3); padding-bottom: .1rem; transition: border-color .3s; }
+  .modal-meta-value a:hover { border-color: var(--accent); }
+  .modal-desc { font-size: 1rem; line-height: 1.9; color: var(--warm-gray); max-width: 720px; margin-bottom: 4rem; }
+  .modal-images { display: flex; flex-direction: column; gap: 1.5rem; }
+  .modal-img { width: 100%; height: auto; display: block; }
+
+  /* MARQUEE */
+  #marquee-section { padding: 8vh 0; overflow: hidden; border-top: 1px solid rgba(255,255,255,.06); border-bottom: 1px solid rgba(255,255,255,.06); background: var(--off-black); }
+  .marquee-inner { display: flex; align-items: center; animation: marqueeLeft 18s linear infinite; white-space: nowrap; }
+  .marquee-item { display: flex; align-items: center; gap: 2.5rem; padding-right: 2.5rem; }
+  .marquee-text { font-family: var(--serif); font-size: clamp(1.2rem,2.5vw,2rem); font-weight: 300; color: var(--warm-gray); font-style: italic; white-space: nowrap; letter-spacing: .02em; }
+  .marquee-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; flex-shrink: 0; }
+  @keyframes marqueeLeft { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ABOUT */
+  #about { padding: 15vh 5vw; max-width: 1400px; margin: 0 auto; }
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6vw; align-items: start; }
+  .about-text-main { font-family: var(--serif); font-size: clamp(1.8rem,3.5vw,2.8rem); font-weight: 300; line-height: 1.3; color: var(--cream); letter-spacing: -.01em; margin-bottom: 3rem; }
+  .about-text-main em { font-style: italic; color: var(--accent); }
+  .about-bio-full { display: flex; flex-direction: column; gap: 1.5rem; }
+  .about-bio-full p { font-size: .95rem; line-height: 1.9; color: var(--warm-gray); font-weight: 300; }
+  .about-tags { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: 2rem; }
+  .tag { font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; border: 1px solid var(--mid-gray); padding: .5rem 1rem; color: var(--warm-gray); transition: border-color .3s, color .3s; }
+  .tag:hover { border-color: var(--accent); color: var(--accent); }
+  .about-contact-info { margin-top: 2.5rem; display: flex; flex-direction: column; gap: .8rem; }
+  .about-contact-info a { font-size: .85rem; color: var(--warm-gray); display: flex; align-items: center; gap: .8rem; transition: color .3s; }
+  .about-contact-info a:hover { color: var(--accent); }
+  .about-contact-info a::before { content: '→'; color: var(--accent); font-size: .8rem; }
+
+  /* FOOTER */
+  #footer { padding: 15vh 5vw 6vh; max-width: 1400px; margin: 0 auto; }
+  .footer-headline { font-family: var(--serif); font-size: clamp(4rem,10vw,9rem); font-weight: 300; line-height: .9; letter-spacing: -.04em; color: var(--cream); margin-bottom: 8vh; }
+  .footer-headline em { font-style: italic; color: var(--accent); display: block; }
+  .footer-cta { display: inline-flex; align-items: center; gap: 1.5rem; font-size: .85rem; letter-spacing: .14em; text-transform: uppercase; color: var(--black); background: var(--accent); padding: 1.2rem 2.5rem; transition: background .3s, letter-spacing .4s var(--ease); margin-bottom: 12vh; }
+  .footer-cta:hover { background: var(--cream); letter-spacing: .2em; }
+  .footer-bottom { display: flex; align-items: flex-end; justify-content: space-between; padding-top: 3rem; border-top: 1px solid rgba(255,255,255,.07); }
+  .footer-info p { font-size: .78rem; color: var(--mid-gray); letter-spacing: .08em; line-height: 2; }
+  .footer-info p span { color: var(--warm-gray); }
+  .footer-socials { display: flex; flex-direction: column; align-items: flex-end; gap: .6rem; }
+  .footer-socials a { font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; color: var(--mid-gray); transition: color .3s; position: relative; }
+  .footer-socials a::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: right; transition: transform .4s var(--ease); }
+  .footer-socials a:hover { color: var(--accent); }
+  .footer-socials a:hover::after { transform: scaleX(1); transform-origin: left; }
+
+  @media (max-width: 768px) {
+    .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+    .project-item { grid-template-columns: 40px 1fr; gap: 1rem; }
+    .project-date, .project-arrow { display: none; }
+    .footer-bottom { flex-direction: column; gap: 2rem; align-items: flex-start; }
+    .footer-socials { align-items: flex-start; }
+    nav { padding: 1.5rem 4vw; }
+    .nav-links { gap: 1.5rem; }
+    .nav-links a:nth-child(n+3) { display: none; }
+    .modal-meta { gap: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- Preloader -->
+<div id="preloader">
+  <div id="preloader-word">Hello</div>
+</div>
+
+<!-- Nav -->
+<nav>
+  <a href="#" class="nav-logo">Sam Hyun</a>
+  <ul class="nav-links">
+    <li><a href="#works">Work</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="mailto:samhyun@gwu.edu">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-bg-grid"></div>
+  <div class="hero-label">
+    <p>Based in Washington, D.C.</p>
+    <p>Graphic Design BFA</p>
+    <p>Corcoran / GWU</p>
+  </div>
+  <div class="hero-ticker-wrap">
+    <div class="hero-ticker-inner">
+      <span class="hero-ticker-text">Graphic Design&nbsp;&nbsp;—&nbsp;&nbsp;<em>UI/UX</em>&nbsp;&nbsp;—&nbsp;&nbsp;</span>
+      <span class="hero-ticker-text">Graphic Design&nbsp;&nbsp;—&nbsp;&nbsp;<em>UI/UX</em>&nbsp;&nbsp;—&nbsp;&nbsp;</span>
+      <span class="hero-ticker-text">Graphic Design&nbsp;&nbsp;—&nbsp;&nbsp;<em>UI/UX</em>&nbsp;&nbsp;—&nbsp;&nbsp;</span>
+      <span class="hero-ticker-text">Graphic Design&nbsp;&nbsp;—&nbsp;&nbsp;<em>UI/UX</em>&nbsp;&nbsp;—&nbsp;&nbsp;</span>
+    </div>
+  </div>
+  <div class="hero-scroll-hint">
+    <div class="scroll-line"></div>
+    <span>Scroll to explore</span>
+  </div>
+</section>
+
+<!-- Works -->
+<section id="works">
+  <div class="works-header reveal">
+    <h2 class="works-title">Selected<br><em style="font-style:italic;color:var(--accent);">Work</em></h2>
+    <span class="works-count">05 Projects</span>
+  </div>
+  <ul class="project-list">
+
+    <li class="project-item reveal" data-project="0"
+        data-preview-img="https://static.wixstatic.com/media/6f4eb9_b3ff62db53964826a2d7c03d902a7664~mv2.jpeg/v1/fit/w_800,h_600,q_90,enc_avif,quality_auto/6f4eb9_b3ff62db53964826a2d7c03d902a7664~mv2.jpeg">
+      <span class="project-num">01</span>
+      <div class="project-info">
+        <span class="project-title">The Univers Olympics</span>
+        <div class="project-tags-row">
+          <span class="project-tag-sm">Type Specimen Book</span>
+          <span class="project-tag-sm">Editorial Design</span>
+          <span class="project-tag-sm">Typography</span>
+        </div>
+      </div>
+      <span class="project-date">Spring 2025</span>
+      <span class="project-arrow">→</span>
+    </li>
+
+    <li class="project-item reveal reveal-delay-1" data-project="1"
+        data-preview-img="https://static.wixstatic.com/media/6f4eb9_ebf9f8b74e154631b0cbd942bcf6667d~mv2.png/v1/fit/w_800,h_600,q_90,enc_avif,quality_auto/6f4eb9_ebf9f8b74e154631b0cbd942bcf6667d~mv2.png">
+      <span class="project-num">02</span>
+      <div class="project-info">
+        <span class="project-title">BAB</span>
+        <div class="project-tags-row">
+          <span class="project-tag-sm">Recipe Book</span>
+          <span class="project-tag-sm">Editorial Design</span>
+          <span class="project-tag-sm">Illustration</span>
+        </div>
+      </div>
+      <span class="project-date">Fall 2024</span>
+      <span class="project-arrow">→</span>
+    </li>
+
+    <li class="project-item reveal reveal-delay-2" data-project="2"
+        data-preview-img="https://static.wixstatic.com/media/6f4eb9_54c2895f30cb49149ec429aa3e4242f4~mv2.png/v1/fit/w_800,h_600,q_90,enc_avif,quality_auto/6f4eb9_54c2895f30cb49149ec429aa3e4242f4~mv2.png">
+      <span class="project-num">03</span>
+      <div class="project-info">
+        <span class="project-title">PICKAL</span>
+        <div class="project-tags-row">
+          <span class="project-tag-sm">Branding</span>
+          <span class="project-tag-sm">App Design</span>
+          <span class="project-tag-sm">UI/UX</span>
+        </div>
+      </div>
+      <span class="project-date">Fall 2025</span>
+      <span class="project-arrow">→</span>
+    </li>
+
+    <li class="project-item reveal reveal-delay-3" data-project="3"
+        data-preview-img="https://static.wixstatic.com/media/6f4eb9_028be37e7ef24ab4b9dca747bdc8e5ea~mv2.png/v1/fit/w_800,h_600,q_90,enc_avif,quality_auto/6f4eb9_028be37e7ef24ab4b9dca747bdc8e5ea~mv2.png">
+      <span class="project-num">04</span>
+      <div class="project-info">
+        <span class="project-title">ATYPI Design Conference</span>
+        <div class="project-tags-row">
+          <span class="project-tag-sm">Branding</span>
+          <span class="project-tag-sm">Poster Design</span>
+          <span class="project-tag-sm">Typography</span>
+        </div>
+      </div>
+      <span class="project-date">Spring 2025</span>
+      <span class="project-arrow">→</span>
+    </li>
+
+    <li class="project-item reveal reveal-delay-4" data-project="4"
+        data-preview-img="https://static.wixstatic.com/media/6f4eb9_a76d49eb67f740f9bcf7965be81b7bba~mv2.jpeg/v1/fit/w_800,h_600,q_90,enc_avif,quality_auto/6f4eb9_a76d49eb67f740f9bcf7965be81b7bba~mv2.jpeg">
+      <span class="project-num">05</span>
+      <div class="project-info">
+        <span class="project-title">Nostalgic Dalgona</span>
+        <div class="project-tags-row">
+          <span class="project-tag-sm">Website Design</span>
+        </div>
+      </div>
+      <span class="project-date">Spring 2025</span>
+      <span class="project-arrow">→</span>
+    </li>
+
+  </ul>
+</section>
+
+<!-- Project hover preview -->
+<div id="project-preview">
+  <img class="preview-img" id="preview-img" src="" alt="">
+  <div class="preview-overlay"></div>
+  <div class="preview-label" id="preview-label"></div>
+</div>
+
+<!-- Project Modal -->
+<div id="modal-overlay">
+  <div id="modal">
+    <button class="modal-close" id="modal-close">✕</button>
+    <div class="modal-header">
+      <p class="modal-tag" id="modal-tag">Project</p>
+      <h2 class="modal-title" id="modal-title"></h2>
+      <div class="modal-meta" id="modal-meta"></div>
+      <p class="modal-desc" id="modal-desc"></p>
+    </div>
+    <div class="modal-images" id="modal-images"></div>
+  </div>
+</div>
+
+<!-- Marquee -->
+<div id="marquee-section">
+  <div class="marquee-inner">
+    <div class="marquee-item"><span class="marquee-text">Graphic Design</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">UI/UX</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Editorial</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Typography</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Interactive</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">System Design</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Identity</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Illustration</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Graphic Design</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">UI/UX</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Editorial</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Typography</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Interactive</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">System Design</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Identity</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Illustration</span><span class="marquee-dot"></span></div>
+  </div>
+</div>
+
+<!-- About -->
+<section id="about">
+  <p class="section-label reveal">About</p>
+  <div class="about-grid">
+    <div>
+      <h2 class="about-text-main reveal reveal-delay-1">
+        System-driven design.<br>
+        <em>Socially engaged</em><br>
+        across every medium.
+      </h2>
+      <div class="about-tags reveal reveal-delay-2">
+        <span class="tag">Brand Identity</span>
+        <span class="tag">UI/UX Design</span>
+        <span class="tag">Editorial</span>
+        <span class="tag">Typography</span>
+        <span class="tag">Interactive</span>
+        <span class="tag">Illustration</span>
+        <span class="tag">Poster Design</span>
+        <span class="tag">App Design</span>
+      </div>
+      <div class="about-contact-info reveal reveal-delay-3">
+        <a href="mailto:samhyun@gwu.edu">Samhyun@gwu.edu</a>
+        <a href="tel:2027950349">202-795-0349</a>
+      </div>
+    </div>
+    <div class="about-bio-full reveal reveal-delay-2">
+      <p>I am a Graphic Design BFA candidate at the Corcoran School of the Arts &amp; Design at GWU, creating system-driven and socially engaged design across UI/UX, editorial, and interactive platforms.</p>
+      <p>I entered graphic design through problem-solving. Recognizing my strength in analyzing challenges and constructing structured responses, I was drawn to a discipline where decision-making, systems thinking, and visual communication intersect. Graphic design revealed itself not merely as a creative practice, but as a strategic one — a field where form and function must coexist with intention.</p>
+      <p>Growing up in a household immersed in visual culture — with a mother specializing in fabric design and a brother in fine arts — I was constantly surrounded by artistic materials and creative dialogue. While this environment nurtured my sensitivity to form and composition, it was the analytical dimension of design that solidified my commitment to the field.</p>
+      <p>Influenced by both Korean cultural sensibilities and my experience living in Washington, D.C., I am particularly interested in how design can operate as a mechanism for social and environmental change. Whether addressing sustainability, public health, or community engagement, I view design as a tool that can shape behavior and guide decision-making.</p>
+      <p>UI/UX and interactive systems especially resonate with me because they transform design from static output into lived interaction. Ultimately, I aim to be a designer who focuses on essence — contributing to a more aware and responsible visual culture.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer id="footer">
+  <h2 class="footer-headline reveal">
+    Let's work
+    <em>together.</em>
+  </h2>
+  <a href="mailto:samhyun@gwu.edu" class="footer-cta reveal">Get in touch ↗</a>
+  <div class="footer-bottom reveal">
+    <div class="footer-info">
+      <p><span>Sam Hyun</span></p>
+      <p>Graphic Designer &amp; UI/UX Designer</p>
+      <p>Corcoran School of the Arts &amp; Design — GWU</p>
+      <p style="margin-top:1rem;">© 2025 Edition</p>
+    </div>
+    <div class="footer-socials">
+      <a href="mailto:samhyun@gwu.edu">samhyun@gwu.edu</a>
+      <a href="tel:2027950349">202-795-0349</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// PROJECT DATA
+const projects = [
+  {
+    title: 'The Univers Olympics',
+    tag: 'Type Specimen Book · Editorial Design · Typography',
+    date: 'Spring 2025',
+    desc: 'In this project I used the Univers typeface to create a type specimen book. Type specimen books are meant to highlight the particularly notable aspects of a typeface, as well as showcase the type in typical use cases to allow designers to accurately choose a typeface. My book focuses on Univers, framed by the secondary theme of the Olympic Games, highlighting its iconic role in signage and wayfinding during the 1972 Munich Olympics. It is a type collective that brings fonts together under one visual system.',
+    images: [
+      'https://static.wixstatic.com/media/6f4eb9_b3ff62db53964826a2d7c03d902a7664~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_b3ff62db53964826a2d7c03d902a7664~mv2.jpeg',
+      'https://static.wixstatic.com/media/6f4eb9_322e849c0b6f4b729c0ef48ffefb5895~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_322e849c0b6f4b729c0ef48ffefb5895~mv2.jpeg',
+      'https://static.wixstatic.com/media/6f4eb9_c37bb47c2afc4b018d866a8dabc11499~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_c37bb47c2afc4b018d866a8dabc11499~mv2.jpeg',
+      'https://static.wixstatic.com/media/6f4eb9_42104c3a26d646f9bbd12a38c7f06a92~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_42104c3a26d646f9bbd12a38c7f06a92~mv2.jpeg',
+      'https://static.wixstatic.com/media/6f4eb9_95e97a9195944485b9c39d92e3975d8c~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_95e97a9195944485b9c39d92e3975d8c~mv2.jpeg',
+      'https://static.wixstatic.com/media/6f4eb9_46e5a611f1754d7f8baf97d19dbef551~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_46e5a611f1754d7f8baf97d19dbef551~mv2.jpeg',
+      'https://static.wixstatic.com/media/6f4eb9_64372a67aa474ca0bb710f93f8c23054~mv2.png/v1/fit/w_1440,h_1440,q_90,enc_avif,quality_auto/6f4eb9_64372a67aa474ca0bb710f93f8c23054~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_f7076168876e4a02b8b08194b8f1b452~mv2.png/v1/fit/w_1440,h_720,q_90,enc_avif,quality_auto/6f4eb9_f7076168876e4a02b8b08194b8f1b452~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_e421a6bd3bad46298d8eb4b1aff6941d~mv2.png/v1/fit/w_1440,h_720,q_90,enc_avif,quality_auto/6f4eb9_e421a6bd3bad46298d8eb4b1aff6941d~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_47edb8ac6f1948e69f989c5a19e06dec~mv2.png/v1/fit/w_1440,h_720,q_90,enc_avif,quality_auto/6f4eb9_47edb8ac6f1948e69f989c5a19e06dec~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_3d8fbf4d5d4444bdb7a1ddbe5340ea33~mv2.png/v1/fit/w_1440,h_720,q_90,enc_avif,quality_auto/6f4eb9_3d8fbf4d5d4444bdb7a1ddbe5340ea33~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_49309046c8034f5bb06804ac55efaf72~mv2.png/v1/fit/w_1440,h_720,q_90,enc_avif,quality_auto/6f4eb9_49309046c8034f5bb06804ac55efaf72~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_a1232c45fca64f8f80f5417238d78186~mv2.png/v1/fit/w_1440,h_720,q_90,enc_avif,quality_auto/6f4eb9_a1232c45fca64f8f80f5417238d78186~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_4cf094a65cbc42b3ad94c88a28eaa351~mv2.png/v1/fit/w_1440,h_720,q_90,enc_avif,quality_auto/6f4eb9_4cf094a65cbc42b3ad94c88a28eaa351~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_8c6d2d5500d34d5fafac778cc533bab6~mv2.png/v1/fit/w_1440,h_720,q_90,enc_avif,quality_auto/6f4eb9_8c6d2d5500d34d5fafac778cc533bab6~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_f5fd3d68cbd24d8eb241e9822cac6fd1~mv2.png/v1/fit/w_1440,h_720,q_90,enc_avif,quality_auto/6f4eb9_f5fd3d68cbd24d8eb241e9822cac6fd1~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_cd614bdbe9914223ad7baeac2401da4c~mv2.png/v1/fit/w_1440,h_1440,q_90,enc_avif,quality_auto/6f4eb9_cd614bdbe9914223ad7baeac2401da4c~mv2.png',
+    ]
+  },
+  {
+    title: 'BAB',
+    tag: 'Recipe Book · Editorial Design · Illustration',
+    date: 'Fall 2024',
+    desc: 'The goal of the project was to combine clear typographic hierarchy with strong visual elements to guide readers through recipes in an engaging and accessible way. The publication features three traditional Korean dishes — Tteokbokki, Sundubu-jjigae, and Hotteok — and presents their ingredients, preparation steps, and cultural background through a consistent layout system. During the design process, I developed a grid-based layout to organize information such as ingredients, cooking directions, and preparation times. I also incorporated bilingual elements (English and Korean) to reflect the cultural context of the dishes.',
+    images: [
+      'https://static.wixstatic.com/media/6f4eb9_ebf9f8b74e154631b0cbd942bcf6667d~mv2.png/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_ebf9f8b74e154631b0cbd942bcf6667d~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_35f86dd75eda4f7fb550b55b9c6a9f0a~mv2.png/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_35f86dd75eda4f7fb550b55b9c6a9f0a~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_e6498581dfb04b969f7f57e1d47448a4~mv2.png/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_e6498581dfb04b969f7f57e1d47448a4~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_7919919c1d364752a75eca38d0c30740~mv2.jpg/v1/fit/w_1440,h_1429,q_90,enc_avif,quality_auto/6f4eb9_7919919c1d364752a75eca38d0c30740~mv2.jpg',
+      'https://static.wixstatic.com/media/6f4eb9_392917909acf4effbcc9d827b1f316df~mv2.jpg/v1/fit/w_1440,h_1327,q_90,enc_avif,quality_auto/6f4eb9_392917909acf4effbcc9d827b1f316df~mv2.jpg',
+      'https://static.wixstatic.com/media/6f4eb9_1f72c6ccf95d45ce86e3783b140a2076~mv2.jpg/v1/fit/w_1440,h_1864,q_90,enc_avif,quality_auto/6f4eb9_1f72c6ccf95d45ce86e3783b140a2076~mv2.jpg',
+      'https://static.wixstatic.com/media/6f4eb9_eca5c93874fa482a8086a50fbf253c10~mv2.jpg/v1/fit/w_1440,h_1492,q_90,enc_avif,quality_auto/6f4eb9_eca5c93874fa482a8086a50fbf253c10~mv2.jpg',
+    ]
+  },
+  {
+    title: 'PICKAL',
+    tag: 'Branding · App Design · UI/UX',
+    date: 'Fall 2025',
+    desc: 'Pickal is a community-driven marketplace app where people can buy, sell, and share goods with their neighbors, promoting sustainability and fostering local connections. Blending the words "Pick" and "Local," Pickal empowers users to make sustainable choices by keeping items in circulation and building meaningful connections through peer-to-peer exchanges.',
+    images: [
+      'https://static.wixstatic.com/media/6f4eb9_54c2895f30cb49149ec429aa3e4242f4~mv2.png/v1/fit/w_1440,h_698,q_90,enc_avif,quality_auto/6f4eb9_54c2895f30cb49149ec429aa3e4242f4~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_49b94293a63d498cb3ce000f45c81071~mv2.png/v1/fit/w_1440,h_1067,q_90,enc_avif,quality_auto/6f4eb9_49b94293a63d498cb3ce000f45c81071~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_5c60bd810b974ccdb1fd4fcf0facaad5~mv2.png/v1/fit/w_1440,h_2263,q_90,enc_avif,quality_auto/6f4eb9_5c60bd810b974ccdb1fd4fcf0facaad5~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_ad4c874c420248748c4b29e21e1915c0~mv2.png/v1/fit/w_1440,h_1057,q_90,enc_avif,quality_auto/6f4eb9_ad4c874c420248748c4b29e21e1915c0~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_33ae6968d7714405af1ce7490d87839e~mv2.png/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_33ae6968d7714405af1ce7490d87839e~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_26a9d938135f4a52b5014b1d37da67e7~mv2.png/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_26a9d938135f4a52b5014b1d37da67e7~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_b65c98a3f1a84fb9923a309c21411960~mv2.png/v1/fit/w_1440,h_1019,q_90,enc_avif,quality_auto/6f4eb9_b65c98a3f1a84fb9923a309c21411960~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_50cf068cad534f1a9a6ad6dcd0e2dce9~mv2.png/v1/fit/w_1249,h_1221,q_90,enc_avif,quality_auto/6f4eb9_50cf068cad534f1a9a6ad6dcd0e2dce9~mv2.png',
+    ]
+  },
+  {
+    title: 'ATYPI Design Conference',
+    tag: 'Branding · Poster Design · Typography',
+    date: 'Spring 2025',
+    desc: 'This project involved the design of promotional materials for the ATYPI Design Conference, including a trifold program and two posters highlighting featured speakers. The primary objective was to create a unified typographic system and a flexible grid that could scale effectively across multiple formats. The design process began with developing three concept directions, followed by typographic exploration and thumbnail sketching. Since ATYPI took place in Brisbane, the posters draw inspiration from the city\'s iconic graffiti culture, incorporating it as a central visual concept.',
+    images: [
+      'https://static.wixstatic.com/media/6f4eb9_028be37e7ef24ab4b9dca747bdc8e5ea~mv2.png/v1/fit/w_1440,h_1113,q_90,enc_avif,quality_auto/6f4eb9_028be37e7ef24ab4b9dca747bdc8e5ea~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_28fdb69dc6074f95b1e47c1ee2270a6b~mv2.png/v1/fit/w_1440,h_1113,q_90,enc_avif,quality_auto/6f4eb9_28fdb69dc6074f95b1e47c1ee2270a6b~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_19467d319015444199f30101259b843a~mv2.png/v1/fit/w_1440,h_1921,q_90,enc_avif,quality_auto/6f4eb9_19467d319015444199f30101259b843a~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_776ef25cbb344996b8ca0bf8fee8d666~mv2.png/v1/fit/w_1440,h_1921,q_90,enc_avif,quality_auto/6f4eb9_776ef25cbb344996b8ca0bf8fee8d666~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_6cedf05ec7e34e5b967f41b8d1b05d53~mv2.png/v1/fit/w_1440,h_1080,q_90,enc_avif,quality_auto/6f4eb9_6cedf05ec7e34e5b967f41b8d1b05d53~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_0f88f63e99d445eabc1debc355d67975~mv2.png/v1/fit/w_1440,h_1080,q_90,enc_avif,quality_auto/6f4eb9_0f88f63e99d445eabc1debc355d67975~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_6e322479ed6048d5b623866589812df3~mv2.png/v1/fit/w_1440,h_856,q_90,enc_avif,quality_auto/6f4eb9_6e322479ed6048d5b623866589812df3~mv2.png',
+      'https://static.wixstatic.com/media/6f4eb9_29123b8034b148afaba97f90919dbd47~mv2.png/v1/fit/w_1440,h_568,q_90,enc_avif,quality_auto/6f4eb9_29123b8034b148afaba97f90919dbd47~mv2.png',
+    ]
+  },
+  {
+    title: 'Nostalgic Dalgona',
+    tag: 'Website Design',
+    date: 'Spring 2025',
+    link: 'https://www.figma.com/proto/ratr0WvNGxSzgkR4IZwLkF/SamHyun-TypeII-Project3-Final?node-id=1-9&p=f&t=nu4MOtutxoe6YJfo-1&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=1%3A9',
+    desc: 'Main goal of my project was to create a bilingual website that teaches users how to make dalgona candy — combining clear instructional design with playful storytelling. I chose to theme the experience after Squid Game, using its visual language and mission-based progression as a creative framework. I challenged myself to treat type not only as a communicator but as a design element that reflects the cultural context of the subject. Using a mission-based step system, the website guides users through the process while maintaining a cohesive layout, intuitive navigation, and a balance between Hangul and Roman type.',
+    images: [
+      'https://static.wixstatic.com/media/6f4eb9_a76d49eb67f740f9bcf7965be81b7bba~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_a76d49eb67f740f9bcf7965be81b7bba~mv2.jpeg',
+      'https://static.wixstatic.com/media/6f4eb9_3be076bdb8904e58b86134f9327d765d~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_3be076bdb8904e58b86134f9327d765d~mv2.jpeg',
+      'https://static.wixstatic.com/media/6f4eb9_135b6de5ca0146cb9b378aeeae7be764~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_135b6de5ca0146cb9b378aeeae7be764~mv2.jpeg',
+      'https://static.wixstatic.com/media/6f4eb9_6410b01c1e9b480bb2155e976bfeb7b6~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_6410b01c1e9b480bb2155e976bfeb7b6~mv2.jpeg',
+      'https://static.wixstatic.com/media/6f4eb9_6a91cb0285a74abda34afa8e11bc6ae4~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_6a91cb0285a74abda34afa8e11bc6ae4~mv2.jpeg',
+      'https://static.wixstatic.com/media/6f4eb9_09206d209460423cabe27a8b7554d080~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_09206d209460423cabe27a8b7554d080~mv2.jpeg',
+    ]
+  }
+];
+
+// CURSOR
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+document.querySelectorAll('a,.project-item,.modal-close').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cursor.classList.add('hovered');ring.classList.add('hovered');});
+  el.addEventListener('mouseleave',()=>{cursor.classList.remove('hovered');ring.classList.remove('hovered');});
+});
+(function animCursor(){
+  cursor.style.left=mx+'px';cursor.style.top=my+'px';
+  rx+=(mx-rx)*.12;ry+=(my-ry)*.12;
+  ring.style.left=rx+'px';ring.style.top=ry+'px';
+  requestAnimationFrame(animCursor);
+})();
+
+// PRELOADER
+const preloaderEl=document.getElementById('preloader');
+const wordEl=document.getElementById('preloader-word');
+const words=['Hello','안녕하세요','Bonjour','Ciao','Olà','こんにちは','Hallo'];
+let wi=0;
+function showWord(){
+  wordEl.textContent=words[wi%words.length];
+  wordEl.classList.add('visible');
+  setTimeout(()=>{
+    wordEl.classList.remove('visible');
+    wi++;
+    if(wi<words.length){setTimeout(showWord,200);}
+    else{setTimeout(()=>{preloaderEl.classList.add('hidden');},300);}
+  },420);
+}
+showWord();
+
+// SCROLL REVEAL
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// HOVER PREVIEW
+const preview=document.getElementById('project-preview');
+const previewImg=document.getElementById('preview-img');
+const previewLabel=document.getElementById('preview-label');
+let px=0,py=0,tx=0,ty=0;
+document.querySelectorAll('.project-item').forEach(item=>{
+  item.addEventListener('mouseenter',()=>{
+    preview.classList.add('visible');
+    previewImg.src=item.dataset.previewImg;
+    previewLabel.textContent=item.querySelector('.project-title').textContent;
+  });
+  item.addEventListener('mouseleave',()=>preview.classList.remove('visible'));
+});
+document.addEventListener('mousemove',e=>{tx=e.clientX+28;ty=e.clientY-190;});
+(function animPreview(){
+  px+=(tx-px)*.1;py+=(ty-py)*.1;
+  preview.style.left=px+'px';preview.style.top=py+'px';
+  requestAnimationFrame(animPreview);
+})();
+
+// MODAL
+const modalOverlay=document.getElementById('modal-overlay');
+const modalClose=document.getElementById('modal-close');
+function openModal(idx){
+  const p=projects[idx];
+  document.getElementById('modal-tag').textContent=p.tag;
+  document.getElementById('modal-title').textContent=p.title;
+  document.getElementById('modal-desc').textContent=p.desc;
+  const metaEl=document.getElementById('modal-meta');
+  let metaHTML=`<div class="modal-meta-item"><p class="modal-meta-label">Date</p><p class="modal-meta-value">${p.date}</p></div>`;
+  if(p.link){metaHTML+=`<div class="modal-meta-item"><p class="modal-meta-label">Link</p><p class="modal-meta-value"><a href="${p.link}" target="_blank" rel="noopener">View Project ↗</a></p></div>`;}
+  metaEl.innerHTML=metaHTML;
+  const imagesEl=document.getElementById('modal-images');
+  imagesEl.innerHTML=p.images.map(src=>`<img class="modal-img" src="${src}" alt="${p.title}" loading="lazy">`).join('');
+  modalOverlay.classList.add('open');
+  document.body.style.overflow='hidden';
+  document.getElementById('modal').scrollTop=0;
+}
+document.querySelectorAll('.project-item').forEach(item=>{
+  item.addEventListener('click',()=>openModal(+item.dataset.project));
+});
+modalClose.addEventListener('click',closeModal);
+modalOverlay.addEventListener('click',e=>{if(e.target===modalOverlay)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+function closeModal(){
+  modalOverlay.classList.remove('open');
+  document.body.style.overflow='';
+}
+</script>
+</body>
+</html>
