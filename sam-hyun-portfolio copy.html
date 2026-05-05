@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sam Hyun — Graphic Designer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f2ed;
+    --bg2: #eeeae3;
+    --black: #1a1814;
+    --dark: #2d2a24;
+    --mid: #7a7570;
+    --light: #b5b0a8;
+    --accent: #c8a96e;
+    --accent2: #a8834a;
+    --white: #faf8f4;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'DM Sans', sans-serif;
+    --ease: cubic-bezier(0.76, 0, 0.24, 1);
+  }
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--dark); font-family: var(--sans); font-weight: 300; overflow-x: hidden; cursor: none; }
+  a { text-decoration: none; color: inherit; }
+  ul, li { list-style: none; }
+
+  /* CURSOR */
+  #cursor { position: fixed; width: 8px; height: 8px; background: var(--dark); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: width .3s var(--ease), height .3s var(--ease), background .3s, opacity .3s; }
+  #cursor-ring { position: fixed; width: 32px; height: 32px; border: 1.5px solid rgba(26,24,20,.25); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: width .4s var(--ease), height .4s var(--ease), border-color .3s; }
+  #cursor.hovered { width: 14px; height: 14px; background: var(--accent); }
+  #cursor-ring.hovered { width: 54px; height: 54px; border-color: rgba(200,169,110,.6); }
+
+  /* PRELOADER */
+  #preloader { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: flex; align-items: center; justify-content: center; transition: opacity .8s var(--ease), visibility .8s; }
+  #preloader.hidden { opacity: 0; visibility: hidden; }
+  .preloader-inner { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+  #preloader-word { font-family: var(--serif); font-size: clamp(2.5rem,6vw,5rem); font-weight: 300; color: var(--dark); letter-spacing: .04em; opacity: 0; transform: translateY(16px); transition: opacity .4s, transform .4s var(--ease); }
+  #preloader-word.visible { opacity: 1; transform: translateY(0); }
+  .preloader-bar { width: 160px; height: 1px; background: var(--light); overflow: hidden; }
+  .preloader-progress { height: 100%; background: var(--dark); transform: scaleX(0); transform-origin: left; transition: transform .4s var(--ease); }
+
+  /* NAV */
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.8rem 5vw; display: flex; align-items: center; justify-content: space-between; }
+  nav::before { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(245,242,237,.9) 0%, rgba(245,242,237,0) 100%); pointer-events: none; backdrop-filter: blur(2px); }
+  .nav-logo { font-family: var(--serif); font-size: 1.3rem; font-weight: 400; letter-spacing: .06em; color: var(--dark); position: relative; z-index: 1; }
+  .nav-links { display: flex; gap: 2.5rem; position: relative; z-index: 1; }
+  .nav-links a { font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; color: var(--mid); transition: color .3s; position: relative; }
+  .nav-links a::after { content: ''; position: absolute; bottom: -3px; left: 0; right: 0; height: 1px; background: var(--dark); transform: scaleX(0); transform-origin: left; transition: transform .4s var(--ease); }
+  .nav-links a:hover { color: var(--dark); }
+  .nav-links a:hover::after { transform: scaleX(1); }
+
+  /* ─── HERO ─── */
+  #hero {
+    position: relative;
+    height: 100svh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+  }
+
+  /* Interactive blob canvas */
+  #hero-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+  }
+
+  /* Fine dot grid */
+  .hero-grid {
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background-image: radial-gradient(circle, rgba(26,24,20,.12) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  }
+
+  .hero-content {
+    position: relative; z-index: 2;
+    text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 2rem;
+  }
+  .hero-eyebrow {
+    font-size: .72rem; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--mid); opacity: 0;
+    animation: fadeUp .8s var(--ease) 1.4s forwards;
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .hero-eyebrow::before, .hero-eyebrow::after { content: ''; display: block; width: 24px; height: 1px; background: var(--light); }
+
+  .hero-name {
+    font-family: var(--serif);
+    font-size: clamp(5rem, 13vw, 11rem);
+    font-weight: 300;
+    line-height: .92;
+    letter-spacing: -.02em;
+    color: var(--dark);
+    opacity: 0;
+    animation: fadeUp .9s var(--ease) 1.6s forwards;
+  }
+  .hero-name em {
+    font-style: italic;
+    color: var(--accent);
+    display: block;
+  }
+
+  .hero-desc {
+    font-size: clamp(.85rem, 1.2vw, 1rem);
+    color: var(--mid);
+    line-height: 1.7;
+    max-width: 420px;
+    opacity: 0;
+    animation: fadeUp .8s var(--ease) 1.8s forwards;
+  }
+
+  .hero-cta {
+    display: flex; gap: 1.2rem; align-items: center;
+    opacity: 0;
+    animation: fadeUp .8s var(--ease) 2s forwards;
+  }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: .8rem;
+    font-size: .78rem; letter-spacing: .14em; text-transform: uppercase;
+    background: var(--dark); color: var(--white);
+    padding: 1rem 2rem;
+    transition: background .3s, letter-spacing .4s var(--ease);
+  }
+  .btn-primary:hover { background: var(--accent2); letter-spacing: .18em; }
+  .btn-ghost {
+    display: inline-flex; align-items: center; gap: .6rem;
+    font-size: .78rem; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--mid); border-bottom: 1px solid var(--light);
+    padding-bottom: .3rem;
+    transition: color .3s, border-color .3s;
+  }
+  .btn-ghost:hover { color: var(--dark); border-color: var(--dark); }
+
+  .hero-scroll {
+    position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+    z-index: 2; display: flex; flex-direction: column; align-items: center; gap: .8rem;
+    opacity: 0; animation: fadeUp .8s var(--ease) 2.2s forwards;
+  }
+  .hero-scroll span { font-size: .65rem; letter-spacing: .2em; text-transform: uppercase; color: var(--light); }
+  .scroll-arrow { width: 1px; height: 40px; background: var(--light); position: relative; overflow: hidden; }
+  .scroll-arrow::after { content: ''; position: absolute; top: -100%; left: 0; width: 100%; height: 100%; background: var(--dark); animation: scrollDrop 1.8s var(--ease) infinite 2.4s; }
+  @keyframes scrollDrop { from { top: -100%; } to { top: 100%; } }
+
+  /* Floating tags in hero */
+  .hero-tags {
+    position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  }
+  .float-tag {
+    position: absolute;
+    font-size: .68rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--light);
+    opacity: 0; animation: fadeIn 1s forwards;
+  }
+  .float-tag.t1 { top: 30%; left: 8vw; animation-delay: 2s; }
+  .float-tag.t2 { top: 55%; left: 6vw; animation-delay: 2.2s; }
+  .float-tag.t3 { top: 30%; right: 8vw; animation-delay: 2.1s; text-align: right; }
+  .float-tag.t4 { top: 55%; right: 6vw; animation-delay: 2.3s; text-align: right; }
+  @keyframes fadeIn { to { opacity: 1; } }
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+  /* DIVIDER */
+  .divider { width: 100%; height: 1px; background: rgba(26,24,20,.08); }
+
+  /* WORKS */
+  #works { padding: 12vh 5vw; max-width: 1400px; margin: 0 auto; }
+  .section-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 5rem; }
+  .section-title { font-family: var(--serif); font-size: clamp(2.5rem,6vw,5rem); font-weight: 300; letter-spacing: -.02em; line-height: 1; color: var(--dark); }
+  .section-title em { font-style: italic; color: var(--accent); }
+  .section-count { font-size: .75rem; color: var(--light); letter-spacing: .1em; }
+
+  .project-list { display: flex; flex-direction: column; }
+  .project-item {
+    display: grid; grid-template-columns: 52px 1fr auto auto;
+    align-items: center; gap: 2rem;
+    padding: 2rem 0; border-bottom: 1px solid rgba(26,24,20,.07);
+    cursor: pointer; position: relative; overflow: hidden;
+    transition: padding-left .4s var(--ease), background .3s;
+  }
+  .project-item::before { content: ''; position: absolute; inset: 0; background: var(--bg2); transform: translateX(-100%); transition: transform .5s var(--ease); z-index: 0; }
+  .project-item:hover::before { transform: translateX(0); }
+  .project-item:hover { padding-left: .8rem; }
+  .project-item > * { position: relative; z-index: 1; }
+  .project-num { font-family: var(--serif); font-size: .85rem; color: var(--light); font-style: italic; }
+  .project-info { display: flex; flex-direction: column; gap: .4rem; }
+  .project-title { font-family: var(--serif); font-size: clamp(1.3rem,2.2vw,1.9rem); font-weight: 300; color: var(--dark); letter-spacing: -.01em; transition: color .3s; }
+  .project-item:hover .project-title { color: var(--accent2); }
+  .project-tags-row { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .project-tag-sm { font-size: .65rem; letter-spacing: .08em; text-transform: uppercase; color: var(--light); border: 1px solid rgba(26,24,20,.12); padding: .2rem .55rem; }
+  .project-date { font-size: .72rem; letter-spacing: .1em; color: var(--light); text-align: right; white-space: nowrap; }
+  .project-arrow { width: 34px; height: 34px; border: 1px solid rgba(26,24,20,.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .8rem; color: var(--mid); flex-shrink: 0; transition: background .3s, border-color .3s, color .3s, transform .4s var(--ease); }
+  .project-item:hover .project-arrow { background: var(--dark); border-color: var(--dark); color: var(--white); transform: rotate(45deg); }
+
+  /* HOVER PREVIEW */
+  #project-preview { position: fixed; width: 280px; height: 350px; pointer-events: none; z-index: 50; opacity: 0; transform: scale(.92) rotate(-1.5deg); transition: opacity .4s var(--ease), transform .4s var(--ease); overflow: hidden; border: 1px solid rgba(26,24,20,.07); box-shadow: 0 20px 60px rgba(26,24,20,.12); }
+  #project-preview.visible { opacity: 1; transform: scale(1) rotate(0deg); }
+  #preview-img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+  .preview-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(26,24,20,.6) 0%, transparent 50%); }
+  .preview-label { position: absolute; bottom: 1.2rem; left: 1.2rem; font-family: var(--serif); font-size: 1.1rem; font-weight: 300; color: var(--white); }
+
+  /* MODAL */
+  #modal-overlay { position: fixed; inset: 0; background: rgba(245,242,237,.97); z-index: 200; display: flex; overflow-y: auto; opacity: 0; visibility: hidden; transition: opacity .5s var(--ease), visibility .5s; backdrop-filter: blur(12px); }
+  #modal-overlay.open { opacity: 1; visibility: visible; }
+  #modal { max-width: 1100px; margin: 0 auto; padding: 8rem 5vw 6rem; width: 100%; }
+  .modal-close { position: fixed; top: 2rem; right: 2rem; width: 44px; height: 44px; border: 1px solid rgba(26,24,20,.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: var(--mid); cursor: pointer; background: var(--bg); transition: background .3s, border-color .3s, color .3s; z-index: 201; }
+  .modal-close:hover { background: var(--dark); border-color: var(--dark); color: var(--white); }
+  .modal-tag { font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; color: var(--accent2); margin-bottom: 1.2rem; display: flex; align-items: center; gap: .8rem; }
+  .modal-tag::before { content: ''; display: block; width: 24px; height: 1px; background: var(--accent); }
+  .modal-title { font-family: var(--serif); font-size: clamp(2rem,5vw,4rem); font-weight: 300; color: var(--dark); letter-spacing: -.02em; line-height: 1; margin-bottom: 2rem; }
+  .modal-meta { display: flex; gap: 3rem; flex-wrap: wrap; padding-bottom: 2rem; border-bottom: 1px solid rgba(26,24,20,.08); margin-bottom: 2.5rem; }
+  .modal-meta-item { display: flex; flex-direction: column; gap: .3rem; }
+  .modal-meta-label { font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; color: var(--light); }
+  .modal-meta-value { font-size: .9rem; color: var(--mid); line-height: 1.6; }
+  .modal-meta-value a { color: var(--accent2); border-bottom: 1px solid rgba(200,169,110,.3); padding-bottom: .1rem; transition: border-color .3s; }
+  .modal-meta-value a:hover { border-color: var(--accent2); }
+  .modal-desc { font-size: .98rem; line-height: 1.95; color: var(--mid); max-width: 680px; margin-bottom: 4rem; }
+  .modal-images { display: flex; flex-direction: column; gap: 1.2rem; }
+  .modal-img { width: 100%; height: auto; display: block; }
+
+  /* MARQUEE */
+  #marquee-section { padding: 6vh 0; overflow: hidden; background: var(--bg2); border-top: 1px solid rgba(26,24,20,.06); border-bottom: 1px solid rgba(26,24,20,.06); }
+  .marquee-inner { display: flex; align-items: center; animation: marqueeLeft 20s linear infinite; white-space: nowrap; }
+  .marquee-item { display: flex; align-items: center; gap: 2.5rem; padding-right: 2.5rem; }
+  .marquee-text { font-family: var(--serif); font-size: clamp(1rem, 2vw, 1.6rem); font-weight: 300; color: var(--mid); font-style: italic; white-space: nowrap; letter-spacing: .02em; }
+  .marquee-dot { width: 4px; height: 4px; background: var(--accent); border-radius: 50%; flex-shrink: 0; }
+  @keyframes marqueeLeft { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ABOUT */
+  #about { padding: 14vh 5vw; max-width: 1400px; margin: 0 auto; }
+  .about-label { font-size: .72rem; letter-spacing: .18em; text-transform: uppercase; color: var(--accent2); margin-bottom: 4rem; display: flex; align-items: center; gap: 1rem; }
+  .about-label::before { content: ''; display: block; width: 24px; height: 1px; background: var(--accent); }
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6vw; align-items: start; }
+  .about-text-main { font-family: var(--serif); font-size: clamp(1.7rem,3.2vw,2.6rem); font-weight: 300; line-height: 1.35; color: var(--dark); letter-spacing: -.01em; margin-bottom: 2.5rem; }
+  .about-text-main em { font-style: italic; color: var(--accent2); }
+  .about-tags { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 2.5rem; }
+  .tag { font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; border: 1px solid rgba(26,24,20,.15); padding: .45rem .9rem; color: var(--mid); transition: border-color .3s, color .3s, background .3s; }
+  .tag:hover { border-color: var(--dark); color: var(--dark); background: var(--bg2); }
+  .about-contact a { display: inline-flex; align-items: center; gap: .8rem; font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; color: var(--mid); border-bottom: 1px solid rgba(26,24,20,.15); padding-bottom: .4rem; transition: color .3s, border-color .3s; margin-right: 2rem; margin-top: .5rem; }
+  .about-contact a:hover { color: var(--dark); border-color: var(--dark); }
+  .about-bio-full { display: flex; flex-direction: column; gap: 1.4rem; }
+  .about-bio-full p { font-size: .95rem; line-height: 1.9; color: var(--mid); }
+
+  /* FOOTER */
+  #footer { padding: 14vh 5vw 5vh; background: var(--dark); color: var(--white); }
+  .footer-inner { max-width: 1400px; margin: 0 auto; }
+  .footer-headline { font-family: var(--serif); font-size: clamp(3.5rem,9vw,8rem); font-weight: 300; line-height: .92; letter-spacing: -.03em; color: var(--white); margin-bottom: 7vh; }
+  .footer-headline em { font-style: italic; color: var(--accent); display: block; }
+  .footer-cta { display: inline-flex; align-items: center; gap: 1.2rem; font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; color: var(--dark); background: var(--white); padding: 1.1rem 2.2rem; transition: background .3s, color .3s, letter-spacing .4s var(--ease); margin-bottom: 10vh; }
+  .footer-cta:hover { background: var(--accent); color: var(--white); letter-spacing: .18em; }
+  .footer-bottom { display: flex; align-items: flex-end; justify-content: space-between; padding-top: 2.5rem; border-top: 1px solid rgba(255,255,255,.1); }
+  .footer-info p { font-size: .75rem; color: rgba(255,255,255,.4); letter-spacing: .06em; line-height: 2.2; }
+  .footer-info p span { color: rgba(255,255,255,.7); }
+  .footer-socials { display: flex; flex-direction: column; align-items: flex-end; gap: .5rem; }
+  .footer-socials a { font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.4); transition: color .3s; }
+  .footer-socials a:hover { color: var(--accent); }
+
+  /* REVEAL */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .9s var(--ease), transform .9s var(--ease); }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: .1s; }
+  .reveal-delay-2 { transition-delay: .2s; }
+  .reveal-delay-3 { transition-delay: .3s; }
+  .reveal-delay-4 { transition-delay: .4s; }
+
+  @media (max-width: 768px) {
+    .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+    .project-item { grid-template-columns: 40px 1fr; gap: 1rem; }
+    .project-date, .project-arrow { display: none; }
+    .footer-bottom { flex-direction: column; gap: 2rem; align-items: flex-start; }
+    .footer-socials { align-items: flex-start; }
+    .float-tag { display: none; }
+    nav { padding: 1.4rem 4vw; }
+    .nav-links { gap: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- Preloader -->
+<div id="preloader">
+  <div class="preloader-inner">
+    <div id="preloader-word">Hello</div>
+    <div class="preloader-bar"><div class="preloader-progress" id="preloader-bar"></div></div>
+  </div>
+</div>
+
+<!-- Nav -->
+<nav>
+  <a href="#" class="nav-logo">Sam Hyun</a>
+  <ul class="nav-links">
+    <li><a href="#works">Work</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="mailto:samhyun@gwu.edu">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-grid"></div>
+
+  <!-- Floating context tags -->
+  <div class="hero-tags">
+    <span class="float-tag t1">Editorial Design</span>
+    <span class="float-tag t2">UI / UX</span>
+    <span class="float-tag t3">Typography</span>
+    <span class="float-tag t4">Brand Identity</span>
+  </div>
+
+  <div class="hero-content">
+    <p class="hero-eyebrow">Graphic Designer · Washington D.C.</p>
+    <h1 class="hero-name">
+      Sam<br>
+      <em>Hyun</em>
+    </h1>
+    <p class="hero-desc">
+      BFA candidate at the Corcoran School of the Arts &amp; Design, GWU — creating system-driven, socially engaged design across print, screen, and space.
+    </p>
+    <div class="hero-cta">
+      <a href="#works" class="btn-primary">View Work →</a>
+      <a href="mailto:samhyun@gwu.edu" class="btn-ghost">Get in touch</a>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Works -->
+<section id="works">
+  <div class="section-header reveal">
+    <h2 class="section-title">Selected<br><em>Work</em></h2>
+    <span class="section-count">05 Projects</span>
+  </div>
+  <ul class="project-list">
+    <li class="project-item reveal" data-project="0"
+        data-preview-img="https://static.wixstatic.com/media/6f4eb9_b3ff62db53964826a2d7c03d902a7664~mv2.jpeg/v1/fit/w_800,h_600,q_90,enc_avif,quality_auto/6f4eb9_b3ff62db53964826a2d7c03d902a7664~mv2.jpeg">
+      <span class="project-num">01</span>
+      <div class="project-info">
+        <span class="project-title">The Univers Olympics</span>
+        <div class="project-tags-row">
+          <span class="project-tag-sm">Type Specimen</span>
+          <span class="project-tag-sm">Editorial</span>
+          <span class="project-tag-sm">Typography</span>
+        </div>
+      </div>
+      <span class="project-date">Spring 2025</span>
+      <span class="project-arrow">→</span>
+    </li>
+    <li class="project-item reveal reveal-delay-1" data-project="1"
+        data-preview-img="https://static.wixstatic.com/media/6f4eb9_ebf9f8b74e154631b0cbd942bcf6667d~mv2.png/v1/fit/w_800,h_600,q_90,enc_avif,quality_auto/6f4eb9_ebf9f8b74e154631b0cbd942bcf6667d~mv2.png">
+      <span class="project-num">02</span>
+      <div class="project-info">
+        <span class="project-title">BAB</span>
+        <div class="project-tags-row">
+          <span class="project-tag-sm">Recipe Book</span>
+          <span class="project-tag-sm">Editorial</span>
+          <span class="project-tag-sm">Illustration</span>
+        </div>
+      </div>
+      <span class="project-date">Fall 2024</span>
+      <span class="project-arrow">→</span>
+    </li>
+    <li class="project-item reveal reveal-delay-2" data-project="2"
+        data-preview-img="https://static.wixstatic.com/media/6f4eb9_54c2895f30cb49149ec429aa3e4242f4~mv2.png/v1/fit/w_800,h_600,q_90,enc_avif,quality_auto/6f4eb9_54c2895f30cb49149ec429aa3e4242f4~mv2.png">
+      <span class="project-num">03</span>
+      <div class="project-info">
+        <span class="project-title">PICKAL</span>
+        <div class="project-tags-row">
+          <span class="project-tag-sm">Branding</span>
+          <span class="project-tag-sm">App Design</span>
+          <span class="project-tag-sm">UI/UX</span>
+        </div>
+      </div>
+      <span class="project-date">Fall 2025</span>
+      <span class="project-arrow">→</span>
+    </li>
+    <li class="project-item reveal reveal-delay-3" data-project="3"
+        data-preview-img="https://static.wixstatic.com/media/6f4eb9_028be37e7ef24ab4b9dca747bdc8e5ea~mv2.png/v1/fit/w_800,h_600,q_90,enc_avif,quality_auto/6f4eb9_028be37e7ef24ab4b9dca747bdc8e5ea~mv2.png">
+      <span class="project-num">04</span>
+      <div class="project-info">
+        <span class="project-title">ATYPI Design Conference</span>
+        <div class="project-tags-row">
+          <span class="project-tag-sm">Branding</span>
+          <span class="project-tag-sm">Poster Design</span>
+          <span class="project-tag-sm">Typography</span>
+        </div>
+      </div>
+      <span class="project-date">Spring 2025</span>
+      <span class="project-arrow">→</span>
+    </li>
+    <li class="project-item reveal reveal-delay-4" data-project="4"
+        data-preview-img="https://static.wixstatic.com/media/6f4eb9_a76d49eb67f740f9bcf7965be81b7bba~mv2.jpeg/v1/fit/w_800,h_600,q_90,enc_avif,quality_auto/6f4eb9_a76d49eb67f740f9bcf7965be81b7bba~mv2.jpeg">
+      <span class="project-num">05</span>
+      <div class="project-info">
+        <span class="project-title">Nostalgic Dalgona</span>
+        <div class="project-tags-row">
+          <span class="project-tag-sm">Website Design</span>
+        </div>
+      </div>
+      <span class="project-date">Spring 2025</span>
+      <span class="project-arrow">→</span>
+    </li>
+  </ul>
+</section>
+
+<!-- Hover preview -->
+<div id="project-preview">
+  <img id="preview-img" src="" alt="">
+  <div class="preview-overlay"></div>
+  <div class="preview-label" id="preview-label"></div>
+</div>
+
+<!-- Modal -->
+<div id="modal-overlay">
+  <div id="modal">
+    <button class="modal-close" id="modal-close">✕</button>
+    <p class="modal-tag" id="modal-tag"></p>
+    <h2 class="modal-title" id="modal-title"></h2>
+    <div class="modal-meta" id="modal-meta"></div>
+    <p class="modal-desc" id="modal-desc"></p>
+    <div class="modal-images" id="modal-images"></div>
+  </div>
+</div>
+
+<!-- Marquee -->
+<div id="marquee-section">
+  <div class="marquee-inner">
+    <div class="marquee-item"><span class="marquee-text">Graphic Design</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">UI/UX</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Editorial</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Typography</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Interactive</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">System Design</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Identity</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Illustration</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Graphic Design</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">UI/UX</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Editorial</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Typography</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Interactive</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">System Design</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Identity</span><span class="marquee-dot"></span></div>
+    <div class="marquee-item"><span class="marquee-text">Illustration</span><span class="marquee-dot"></span></div>
+  </div>
+</div>
+
+<!-- About -->
+<section id="about">
+  <p class="about-label reveal">About</p>
+  <div class="about-grid">
+    <div>
+      <h2 class="about-text-main reveal reveal-delay-1">System-driven design.<br><em>Socially engaged</em><br>across every medium.</h2>
+      <div class="about-tags reveal reveal-delay-2">
+        <span class="tag">Brand Identity</span>
+        <span class="tag">UI/UX Design</span>
+        <span class="tag">Editorial</span>
+        <span class="tag">Typography</span>
+        <span class="tag">Interactive</span>
+        <span class="tag">Illustration</span>
+        <span class="tag">Poster Design</span>
+        <span class="tag">App Design</span>
+      </div>
+      <div class="about-contact reveal reveal-delay-3">
+        <a href="mailto:samhyun@gwu.edu">samhyun@gwu.edu ↗</a>
+        <a href="tel:2027950349">202-795-0349</a>
+      </div>
+    </div>
+    <div class="about-bio-full reveal reveal-delay-2">
+      <p>I am a Graphic Design BFA candidate at the Corcoran School of the Arts &amp; Design at GWU, creating system-driven and socially engaged design across UI/UX, editorial, and interactive platforms.</p>
+      <p>I entered graphic design through problem-solving. Recognizing my strength in analyzing challenges and constructing structured responses, I was drawn to a discipline where decision-making, systems thinking, and visual communication intersect. Graphic design revealed itself not merely as a creative practice, but as a strategic one — a field where form and function must coexist with intention.</p>
+      <p>Growing up in a household immersed in visual culture — with a mother specializing in fabric design and a brother in fine arts — I was constantly surrounded by artistic materials and creative dialogue. While this environment nurtured my sensitivity to form and composition, it was the analytical dimension of design that solidified my commitment to the field.</p>
+      <p>Influenced by both Korean cultural sensibilities and my experience living in Washington, D.C., I am particularly interested in how design can operate as a mechanism for social and environmental change. UI/UX and interactive systems especially resonate with me because they transform design from static output into lived interaction.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer id="footer">
+  <div class="footer-inner">
+    <h2 class="footer-headline reveal">Let's work<em>together.</em></h2>
+    <a href="mailto:samhyun@gwu.edu" class="footer-cta reveal">Get in touch ↗</a>
+    <div class="footer-bottom reveal">
+      <div class="footer-info">
+        <p><span>Sam Hyun</span></p>
+        <p>Graphic Designer &amp; UI/UX Designer</p>
+        <p>Corcoran School of the Arts &amp; Design — GWU</p>
+        <p style="margin-top:.8rem;">© 2025 Edition</p>
+      </div>
+      <div class="footer-socials">
+        <a href="mailto:samhyun@gwu.edu">samhyun@gwu.edu</a>
+        <a href="tel:2027950349">202-795-0349</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ─── PROJECT DATA ───
+const projects = [
+  {
+    title: 'The Univers Olympics',
+    tag: 'Type Specimen Book · Editorial Design · Typography',
+    date: 'Spring 2025',
+    desc: 'In this project I used the Univers typeface to create a type specimen book. Type specimen books are meant to highlight the particularly notable aspects of a typeface, as well as showcase the type in typical use cases to allow designers to accurately choose a typeface. My book focuses on Univers, framed by the secondary theme of the Olympic Games, highlighting its iconic role in signage and wayfinding during the 1972 Munich Olympics. It is a type collective that brings fonts together under one visual system.',
+    images: ['https://static.wixstatic.com/media/6f4eb9_b3ff62db53964826a2d7c03d902a7664~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_b3ff62db53964826a2d7c03d902a7664~mv2.jpeg','https://static.wixstatic.com/media/6f4eb9_322e849c0b6f4b729c0ef48ffefb5895~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_322e849c0b6f4b729c0ef48ffefb5895~mv2.jpeg','https://static.wixstatic.com/media/6f4eb9_c37bb47c2afc4b018d866a8dabc11499~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_c37bb47c2afc4b018d866a8dabc11499~mv2.jpeg','https://static.wixstatic.com/media/6f4eb9_42104c3a26d646f9bbd12a38c7f06a92~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_42104c3a26d646f9bbd12a38c7f06a92~mv2.jpeg','https://static.wixstatic.com/media/6f4eb9_95e97a9195944485b9c39d92e3975d8c~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_95e97a9195944485b9c39d92e3975d8c~mv2.jpeg','https://static.wixstatic.com/media/6f4eb9_46e5a611f1754d7f8baf97d19dbef551~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_46e5a611f1754d7f8baf97d19dbef551~mv2.jpeg','https://static.wixstatic.com/media/6f4eb9_64372a67aa474ca0bb710f93f8c23054~mv2.png/v1/fit/w_1440,h_1440,q_90,enc_avif,quality_auto/6f4eb9_64372a67aa474ca0bb710f93f8c23054~mv2.png','https://static.wixstatic.com/media/6f4eb9_f7076168876e4a02b8b08194b8f1b452~mv2.png/v1/fit/w_1440,h_720,q_90,enc_avif,quality_auto/6f4eb9_f7076168876e4a02b8b08194b8f1b452~mv2.png','https://static.wixstatic.com/media/6f4eb9_e421a6bd3bad46298d8eb4b1aff6941d~mv2.png/v1/fit/w_1440,h_720,q_90,enc_avif,quality_auto/6f4eb9_e421a6bd3bad46298d8eb4b1aff6941d~mv2.png','https://static.wixstatic.com/media/6f4eb9_47edb8ac6f1948e69f989c5a19e06dec~mv2.png/v1/fit/w_1440,h_720,q_90,enc_avif,quality_auto/6f4eb9_47edb8ac6f1948e69f989c5a19e06dec~mv2.png','https://static.wixstatic.com/media/6f4eb9_3d8fbf4d5d4444bdb7a1ddbe5340ea33~mv2.png/v1/fit/w_1440,h_720,q_90,enc_avif,quality_auto/6f4eb9_3d8fbf4d5d4444bdb7a1ddbe5340ea33~mv2.png','https://static.wixstatic.com/media/6f4eb9_cd614bdbe9914223ad7baeac2401da4c~mv2.png/v1/fit/w_1440,h_1440,q_90,enc_avif,quality_auto/6f4eb9_cd614bdbe9914223ad7baeac2401da4c~mv2.png']
+  },
+  {
+    title: 'BAB',
+    tag: 'Recipe Book · Editorial Design · Illustration',
+    date: 'Fall 2024',
+    desc: 'The goal of the project was to combine clear typographic hierarchy with strong visual elements to guide readers through recipes in an engaging and accessible way. The publication features three traditional Korean dishes — Tteokbokki, Sundubu-jjigae, and Hotteok — and presents their ingredients, preparation steps, and cultural background through a consistent layout system. I developed a grid-based layout and incorporated bilingual elements (English and Korean) to reflect the cultural context of the dishes.',
+    images: ['https://static.wixstatic.com/media/6f4eb9_ebf9f8b74e154631b0cbd942bcf6667d~mv2.png/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_ebf9f8b74e154631b0cbd942bcf6667d~mv2.png','https://static.wixstatic.com/media/6f4eb9_35f86dd75eda4f7fb550b55b9c6a9f0a~mv2.png/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_35f86dd75eda4f7fb550b55b9c6a9f0a~mv2.png','https://static.wixstatic.com/media/6f4eb9_e6498581dfb04b969f7f57e1d47448a4~mv2.png/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_e6498581dfb04b969f7f57e1d47448a4~mv2.png','https://static.wixstatic.com/media/6f4eb9_7919919c1d364752a75eca38d0c30740~mv2.jpg/v1/fit/w_1440,h_1429,q_90,enc_avif,quality_auto/6f4eb9_7919919c1d364752a75eca38d0c30740~mv2.jpg','https://static.wixstatic.com/media/6f4eb9_392917909acf4effbcc9d827b1f316df~mv2.jpg/v1/fit/w_1440,h_1327,q_90,enc_avif,quality_auto/6f4eb9_392917909acf4effbcc9d827b1f316df~mv2.jpg','https://static.wixstatic.com/media/6f4eb9_1f72c6ccf95d45ce86e3783b140a2076~mv2.jpg/v1/fit/w_1440,h_1864,q_90,enc_avif,quality_auto/6f4eb9_1f72c6ccf95d45ce86e3783b140a2076~mv2.jpg','https://static.wixstatic.com/media/6f4eb9_eca5c93874fa482a8086a50fbf253c10~mv2.jpg/v1/fit/w_1440,h_1492,q_90,enc_avif,quality_auto/6f4eb9_eca5c93874fa482a8086a50fbf253c10~mv2.jpg']
+  },
+  {
+    title: 'PICKAL',
+    tag: 'Branding · App Design · UI/UX',
+    date: 'Fall 2025',
+    desc: 'Pickal is a community-driven marketplace app where people can buy, sell, and share goods with their neighbors, promoting sustainability and fostering local connections. Blending the words "Pick" and "Local," Pickal empowers users to make sustainable choices by keeping items in circulation and building meaningful connections through peer-to-peer exchanges.',
+    images: ['https://static.wixstatic.com/media/6f4eb9_54c2895f30cb49149ec429aa3e4242f4~mv2.png/v1/fit/w_1440,h_698,q_90,enc_avif,quality_auto/6f4eb9_54c2895f30cb49149ec429aa3e4242f4~mv2.png','https://static.wixstatic.com/media/6f4eb9_49b94293a63d498cb3ce000f45c81071~mv2.png/v1/fit/w_1440,h_1067,q_90,enc_avif,quality_auto/6f4eb9_49b94293a63d498cb3ce000f45c81071~mv2.png','https://static.wixstatic.com/media/6f4eb9_5c60bd810b974ccdb1fd4fcf0facaad5~mv2.png/v1/fit/w_1440,h_2263,q_90,enc_avif,quality_auto/6f4eb9_5c60bd810b974ccdb1fd4fcf0facaad5~mv2.png','https://static.wixstatic.com/media/6f4eb9_ad4c874c420248748c4b29e21e1915c0~mv2.png/v1/fit/w_1440,h_1057,q_90,enc_avif,quality_auto/6f4eb9_ad4c874c420248748c4b29e21e1915c0~mv2.png','https://static.wixstatic.com/media/6f4eb9_33ae6968d7714405af1ce7490d87839e~mv2.png/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_33ae6968d7714405af1ce7490d87839e~mv2.png','https://static.wixstatic.com/media/6f4eb9_26a9d938135f4a52b5014b1d37da67e7~mv2.png/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_26a9d938135f4a52b5014b1d37da67e7~mv2.png','https://static.wixstatic.com/media/6f4eb9_50cf068cad534f1a9a6ad6dcd0e2dce9~mv2.png/v1/fit/w_1249,h_1221,q_90,enc_avif,quality_auto/6f4eb9_50cf068cad534f1a9a6ad6dcd0e2dce9~mv2.png']
+  },
+  {
+    title: 'ATYPI Design Conference',
+    tag: 'Branding · Poster Design · Typography',
+    date: 'Spring 2025',
+    desc: "This project involved the design of promotional materials for the ATYPI Design Conference, including a trifold program and two posters highlighting featured speakers. The primary objective was to create a unified typographic system and a flexible grid that could scale effectively across multiple formats. Since ATYPI took place in Brisbane, the posters draw inspiration from the city's iconic graffiti culture, incorporating it as a central visual concept.",
+    images: ['https://static.wixstatic.com/media/6f4eb9_028be37e7ef24ab4b9dca747bdc8e5ea~mv2.png/v1/fit/w_1440,h_1113,q_90,enc_avif,quality_auto/6f4eb9_028be37e7ef24ab4b9dca747bdc8e5ea~mv2.png','https://static.wixstatic.com/media/6f4eb9_28fdb69dc6074f95b1e47c1ee2270a6b~mv2.png/v1/fit/w_1440,h_1113,q_90,enc_avif,quality_auto/6f4eb9_28fdb69dc6074f95b1e47c1ee2270a6b~mv2.png','https://static.wixstatic.com/media/6f4eb9_19467d319015444199f30101259b843a~mv2.png/v1/fit/w_1440,h_1921,q_90,enc_avif,quality_auto/6f4eb9_19467d319015444199f30101259b843a~mv2.png','https://static.wixstatic.com/media/6f4eb9_776ef25cbb344996b8ca0bf8fee8d666~mv2.png/v1/fit/w_1440,h_1921,q_90,enc_avif,quality_auto/6f4eb9_776ef25cbb344996b8ca0bf8fee8d666~mv2.png','https://static.wixstatic.com/media/6f4eb9_6cedf05ec7e34e5b967f41b8d1b05d53~mv2.png/v1/fit/w_1440,h_1080,q_90,enc_avif,quality_auto/6f4eb9_6cedf05ec7e34e5b967f41b8d1b05d53~mv2.png','https://static.wixstatic.com/media/6f4eb9_0f88f63e99d445eabc1debc355d67975~mv2.png/v1/fit/w_1440,h_1080,q_90,enc_avif,quality_auto/6f4eb9_0f88f63e99d445eabc1debc355d67975~mv2.png','https://static.wixstatic.com/media/6f4eb9_6e322479ed6048d5b623866589812df3~mv2.png/v1/fit/w_1440,h_856,q_90,enc_avif,quality_auto/6f4eb9_6e322479ed6048d5b623866589812df3~mv2.png','https://static.wixstatic.com/media/6f4eb9_29123b8034b148afaba97f90919dbd47~mv2.png/v1/fit/w_1440,h_568,q_90,enc_avif,quality_auto/6f4eb9_29123b8034b148afaba97f90919dbd47~mv2.png']
+  },
+  {
+    title: 'Nostalgic Dalgona',
+    tag: 'Website Design',
+    date: 'Spring 2025',
+    link: 'https://www.figma.com/proto/ratr0WvNGxSzgkR4IZwLkF/SamHyun-TypeII-Project3-Final?node-id=1-9&p=f&t=nu4MOtutxoe6YJfo-1&scaling=scale-down&content-scaling=fixed&page-id=0%3A1&starting-point-node-id=1%3A9',
+    desc: 'Main goal of my project was to create a bilingual website that teaches users how to make dalgona candy — combining clear instructional design with playful storytelling. I chose to theme the experience after Squid Game, using its visual language and mission-based progression as a creative framework. Using a mission-based step system, the website guides users through the process while maintaining a cohesive layout, intuitive navigation, and a balance between Hangul and Roman type.',
+    images: ['https://static.wixstatic.com/media/6f4eb9_a76d49eb67f740f9bcf7965be81b7bba~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_a76d49eb67f740f9bcf7965be81b7bba~mv2.jpeg','https://static.wixstatic.com/media/6f4eb9_3be076bdb8904e58b86134f9327d765d~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_3be076bdb8904e58b86134f9327d765d~mv2.jpeg','https://static.wixstatic.com/media/6f4eb9_135b6de5ca0146cb9b378aeeae7be764~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_135b6de5ca0146cb9b378aeeae7be764~mv2.jpeg','https://static.wixstatic.com/media/6f4eb9_6410b01c1e9b480bb2155e976bfeb7b6~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_6410b01c1e9b480bb2155e976bfeb7b6~mv2.jpeg','https://static.wixstatic.com/media/6f4eb9_6a91cb0285a74abda34afa8e11bc6ae4~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_6a91cb0285a74abda34afa8e11bc6ae4~mv2.jpeg','https://static.wixstatic.com/media/6f4eb9_09206d209460423cabe27a8b7554d080~mv2.jpeg/v1/fit/w_1440,h_960,q_90,enc_avif,quality_auto/6f4eb9_09206d209460423cabe27a8b7554d080~mv2.jpeg']
+  }
+];
+
+// ─── CURSOR ───
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+document.querySelectorAll('a,.project-item,.modal-close,.btn-primary,.btn-ghost').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cursor.classList.add('hovered');ring.classList.add('hovered');});
+  el.addEventListener('mouseleave',()=>{cursor.classList.remove('hovered');ring.classList.remove('hovered');});
+});
+(function animCursor(){cursor.style.left=mx+'px';cursor.style.top=my+'px';rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animCursor);})();
+
+// ─── PRELOADER ───
+const preloaderEl = document.getElementById('preloader');
+const wordEl = document.getElementById('preloader-word');
+const barEl = document.getElementById('preloader-bar');
+const words = ['Hello','안녕하세요','Bonjour','Ciao','Olà','こんにちは','Hallo'];
+let wi = 0;
+function showWord(){
+  wordEl.textContent = words[wi % words.length];
+  wordEl.classList.add('visible');
+  barEl.style.transform = `scaleX(${(wi+1)/words.length})`;
+  setTimeout(()=>{
+    wordEl.classList.remove('visible');
+    wi++;
+    if(wi < words.length){ setTimeout(showWord, 180); }
+    else { setTimeout(()=>{ preloaderEl.classList.add('hidden'); }, 400); }
+  }, 420);
+}
+showWord();
+
+// ─── HERO CANVAS — Interactive blob ───
+const canvas = document.getElementById('hero-canvas');
+const ctx = canvas.getContext('2d');
+let W, H, mouse = {x:0,y:0}, blobs = [];
+
+function resize(){
+  W = canvas.width = canvas.offsetWidth;
+  H = canvas.height = canvas.offsetHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Create soft blobs
+class Blob {
+  constructor(x,y,r,color,speed){
+    this.ox=x; this.oy=y; this.x=x; this.y=y;
+    this.r=r; this.color=color; this.speed=speed;
+    this.t=Math.random()*Math.PI*2;
+    this.ax=Math.random()*80-40; this.ay=Math.random()*80-40;
+  }
+  update(mx,my){
+    this.t += this.speed;
+    // Gentle autonomous drift
+    this.x = this.ox + Math.sin(this.t*.7)*this.ax;
+    this.y = this.oy + Math.cos(this.t*.5)*this.ay;
+    // Subtle mouse attraction
+    const dx=mx-this.x, dy=my-this.y;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist < 300){
+      this.x += dx * 0.012;
+      this.y += dy * 0.012;
+    }
+  }
+  draw(){
+    const grad = ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r);
+    grad.addColorStop(0, this.color.replace('A','0.18'));
+    grad.addColorStop(1, this.color.replace('A','0'));
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+    ctx.fillStyle=grad;
+    ctx.fill();
+  }
+}
+
+// Warm beige/gold blobs for light bg
+blobs = [
+  new Blob(W*.35, H*.4, 280, 'rgba(200,169,110,A)', 0.004),
+  new Blob(W*.65, H*.5, 240, 'rgba(200,169,110,A)', 0.003),
+  new Blob(W*.5,  H*.3, 200, 'rgba(180,140,80,A)',  0.005),
+  new Blob(W*.2,  H*.6, 200, 'rgba(210,190,150,A)', 0.004),
+  new Blob(W*.8,  H*.35,180, 'rgba(190,160,110,A)', 0.006),
+];
+
+// Track mouse over hero
+const heroEl = document.getElementById('hero');
+let heroMx = W/2, heroMy = H/2;
+heroEl.addEventListener('mousemove', e=>{
+  const r = canvas.getBoundingClientRect();
+  heroMx = e.clientX - r.left;
+  heroMy = e.clientY - r.top;
+});
+
+function animate(){
+  ctx.clearRect(0,0,W,H);
+  blobs.forEach(b=>{ b.update(heroMx,heroMy); b.draw(); });
+  requestAnimationFrame(animate);
+}
+animate();
+
+// ─── SCROLL REVEAL ───
+const obs = new IntersectionObserver(entries=>{ entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); }); },{threshold:.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// ─── PROJECT HOVER PREVIEW ───
+const preview = document.getElementById('project-preview');
+const previewImg = document.getElementById('preview-img');
+const previewLabel = document.getElementById('preview-label');
+let px=0,py=0,tx=0,ty=0;
+document.querySelectorAll('.project-item').forEach(item=>{
+  item.addEventListener('mouseenter',()=>{
+    preview.classList.add('visible');
+    previewImg.src=item.dataset.previewImg;
+    previewLabel.textContent=item.querySelector('.project-title').textContent;
+  });
+  item.addEventListener('mouseleave',()=>preview.classList.remove('visible'));
+});
+document.addEventListener('mousemove',e=>{tx=e.clientX+28;ty=e.clientY-175;});
+(function animPreview(){px+=(tx-px)*.1;py+=(ty-py)*.1;preview.style.left=px+'px';preview.style.top=py+'px';requestAnimationFrame(animPreview);})();
+
+// ─── MODAL ───
+const modalOverlay = document.getElementById('modal-overlay');
+document.querySelectorAll('.project-item').forEach(item=>{
+  item.addEventListener('click',()=>{
+    const p = projects[+item.dataset.project];
+    document.getElementById('modal-tag').textContent = p.tag;
+    document.getElementById('modal-title').textContent = p.title;
+    document.getElementById('modal-desc').textContent = p.desc;
+    let metaHTML = `<div class="modal-meta-item"><p class="modal-meta-label">Date</p><p class="modal-meta-value">${p.date}</p></div>`;
+    if(p.link) metaHTML += `<div class="modal-meta-item"><p class="modal-meta-label">Link</p><p class="modal-meta-value"><a href="${p.link}" target="_blank" rel="noopener">View Project ↗</a></p></div>`;
+    document.getElementById('modal-meta').innerHTML = metaHTML;
+    document.getElementById('modal-images').innerHTML = p.images.map(src=>`<img class="modal-img" src="${src}" alt="${p.title}" loading="lazy">`).join('');
+    modalOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('modal').scrollTop = 0;
+  });
+});
+document.getElementById('modal-close').addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', e=>{ if(e.target===modalOverlay) closeModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+function closeModal(){ modalOverlay.classList.remove('open'); document.body.style.overflow=''; }
+</script>
+</body>
+</html>
